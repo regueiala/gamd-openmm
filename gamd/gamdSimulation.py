@@ -14,11 +14,13 @@ Modifications:
     - Adapted for membrane protein GPCR simulations
     - Added Hydrogen Mass Repartitioning (HMR) support to enable 4 fs integration timestep
     - Added semi-isotropic barostat conditions for membrane systems (monte carlo membrane barostat)
-    -Ability to initialize simulations from an OpenMM state XML file
+    - Ability to initialize simulations from an OpenMM state XML file
       (e.g., previously equilibrated systems or systems prepared with OpenMM)
+    - reporting of additional simulation data such as potential energy, total energy, temperature, and simulation speed (ns/day) at user-specified intervals
 """
 
 import os
+import sys
 
 import parmed
 import openmm as openmm
@@ -255,9 +257,23 @@ class GamdSimulationFactory:
             gamdSimulation.traj_reporter = openmm_app.PDBReporter
         else:
             raise Exception("Reporter type not found")
-
+            
+        report_interval = getattr(config.outputs.reporting, "energy_interval", 1000)
+        
+        reporter = openmm_app.StateDataReporter(
+            sys.stdout,             # File or stream to write to
+            report_interval,         # Interval in steps
+            step=True,               # Prints current step
+            potentialEnergy=True,    # Prints potential energy
+            totalEnergy=True,
+            temperature=True,        # Prints temperature
+            speed=True,              # Calculates and prints simulation speed (ns/day)
+            separator='\t',
+        )
+        
+        # Attach the reporter directly to the OpenMM Simulation object
+        gamdSimulation.simulation.reporters.append(reporter)        
         return gamdSimulation
-
 
 if __name__ == "__main__":
     pass
