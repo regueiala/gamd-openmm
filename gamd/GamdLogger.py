@@ -155,4 +155,4 @@ class GamdLogger:
                            second_boost_potential + "\t" +
                            first_effective_harmonic_constant + "\t" +
                            second_effective_harmonic_constant + "\n")
-
+        self.gamdLog.flush()
